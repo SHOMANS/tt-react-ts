@@ -1,24 +1,41 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { ChangeEvent, FormEvent, useEffect, useState } from 'react';
+import { IPost } from './@types/posts';
+import Post from './components/Post';
+import { useAppDispatch, useAppSelector } from './hooks/redux';
+import { createPostAction, getAllPostsAction } from './redux/slices/posts';
 
 function App() {
+  const [values, setValues] = useState<IPost>({});
+
+  const dispatch = useAppDispatch();
+  const { isLoading, posts } = useAppSelector((state) => state.posts);
+
+  const handleSubmit: (e: FormEvent<HTMLFormElement>) => void = (e) => {
+    e.preventDefault();
+    dispatch(createPostAction(values));
+    setValues({});
+  };
+
+  const handleChange: (e: ChangeEvent<HTMLInputElement>) => void = (e) => {
+    setValues((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  useEffect(() => {
+    dispatch(getAllPostsAction());
+  }, [dispatch]);
+
+  if (isLoading) return <h1>Loading...</h1>;
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className='App'>
+      <form onSubmit={handleSubmit}>
+        <input type='text' name='title' id='' value={values.title} onChange={handleChange} />
+        <input type='text' name='author' id='' value={values.author} onChange={handleChange} />
+        <button>Submit</button>
+      </form>
+      {posts?.map((post) => (
+        <Post key={post.id} post={post} className='Qaddoura' />
+      ))}
     </div>
   );
 }
